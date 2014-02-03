@@ -1,5 +1,6 @@
 from math import pi, sin, cos
 
+from direct.actor.Actor import Actor
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 
@@ -15,6 +16,12 @@ class MyApp(ShowBase):
         self.environ.setPos(-8, 42, 0)
 
         self.taskMgr.add(self.spin_camera_task, 'spin_camera_task')
+
+        self.panda = Actor('models/panda-model', {'walk': 'models/panda-walk4'})
+        self.panda.setScale(.005, .005, .005)
+        self.panda.reparentTo(self.render)
+        self.panda.loop('walk')
+
 
     def spin_camera_task(self, task):
         angle_deg = task.time * 6.0
