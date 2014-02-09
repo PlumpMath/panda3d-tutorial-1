@@ -6,7 +6,12 @@ from direct.actor.Actor import Actor
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from direct.interval.IntervalGlobal import Sequence
-from panda3d.core import Point3
+from panda3d.core import Point3, loadPrcFileData
+from pandac.PandaModules import WindowProperties
+
+
+loadPrcFileData('', 'fullscreen 1')
+loadPrcFileData('', 'win-size 1600 900')
 
 
 class MyApp(ShowBase):
@@ -14,6 +19,10 @@ class MyApp(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
 
+        props = WindowProperties()
+        props.setCursorHidden(True)
+        props.setMouseMode(WindowProperties.MRelative)
+        self.win.requestProperties(props)
         self.disableMouse()
 
         self.environ = self.loader.loadModel('models/environment')
@@ -90,9 +99,9 @@ class MyApp(ShowBase):
         if self.key_map['cam-backward']:
             coords[1] = -1
         self.camera.setPos(self.camera, *coords)
-        if base.mouseWatcherNode.hasMouse():
-            x = base.mouseWatcherNode.getMouseX()
-            y = base.mouseWatcherNode.getMouseY()
+        if self.mouseWatcherNode.hasMouse():
+            x = self.mouseWatcherNode.getMouseX()
+            y = self.mouseWatcherNode.getMouseY()
 
             prev_mouse = getattr(self, 'prev_mouse', None)
             if prev_mouse:
@@ -100,8 +109,8 @@ class MyApp(ShowBase):
                 delta_y = y - prev_mouse[1]
 
                 self.camera.setHpr(self.camera,
-                                   delta_x * -100,
-                                   delta_y * 100,
+                                   delta_x * -50,
+                                   delta_y * 50,
                                    0)
                 self.camera.setR(0)
 
