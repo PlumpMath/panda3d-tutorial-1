@@ -31,6 +31,7 @@ class MyApp(ShowBase):
         self.environ.setPos(-8, 42, 0)
 
         self.taskMgr.add(self.move_camera_task, 'move_camera_task')
+        self.taskMgr.add(self.move_projectiles_task, 'move_projectiles_task')
 
         self.key_map = {
             'cam-forward': False,
@@ -52,6 +53,8 @@ class MyApp(ShowBase):
         self.accept('d-up', self.set_key, ['cam-right', False])
 
         self.accept('escape', sys.exit)
+
+        self.accept('mouse1', self.set_teapot)
 
         self.panda = Actor('models/panda-model', {'walk': 'models/panda-walk4'})
         self.panda.setScale(.01, .01, .01)
@@ -76,16 +79,27 @@ class MyApp(ShowBase):
         )
         self.panda_pace.loop()
 
-        self.messenger.toggleVerbose()
+        self.teapot = self.loader.loadModel('teapot')
+        self.projectiles = []
 
     def set_key(self, key, value):
         self.key_map[key] = value
 
-    def spin_camera_task(self, task):
-        angle_deg = task.time * 6.0
-        angle_rad = angle_deg * (pi / 180.0)
-        self.camera.setPos(30 * sin(angle_rad), -40.0 * cos(angle_rad), 3)
-        self.camera.setHpr(angle_deg, 0, 0)
+    def set_teapot(self):
+        coords = self.camera.get_pos()
+        quat = self.camera.get_quat()
+        placeholder = self.render.attach_new_node('teapot_placeholder')
+        placeholder.set_pos(self.camera, 0, 20, 0)
+        placeholder.set_quat(quat)
+        self.teapot.instance_to(placeholder)
+        self.projectiles.append(placeholder)
+
+    def move_projectiles_task(self, task):
+        for proj in self.projectiles:
+            proj.set_pos(proj, 0, 1, 0)
+            if proj.get_distance(self.render) > 100:
+                self.projectiles.remove(proj)
+                proj.removeNode()
         return Task.cont
 
     def move_camera_task(self, task):
