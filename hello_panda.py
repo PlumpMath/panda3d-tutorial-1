@@ -3,10 +3,11 @@ import sys
 from math import pi, sin, cos
 
 from direct.actor.Actor import Actor
+from direct.gui.OnscreenText import OnscreenText
+from direct.interval.IntervalGlobal import Sequence
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
-from direct.interval.IntervalGlobal import Sequence
-from panda3d.core import Point3, loadPrcFileData
+from panda3d.core import Point3, loadPrcFileData, TextNode
 from pandac.PandaModules import WindowProperties
 
 
@@ -32,6 +33,7 @@ class MyApp(ShowBase):
 
         self.taskMgr.add(self.move_camera_task, 'move_camera_task')
         self.taskMgr.add(self.move_projectiles_task, 'move_projectiles_task')
+        self.taskMgr.add(self.print_fps_task, 'print_fps_task')
 
         self.key_map = {
             'cam-forward': False,
@@ -81,6 +83,9 @@ class MyApp(ShowBase):
 
         self.teapot = self.loader.loadModel('teapot')
         self.projectiles = []
+        self.fps_time = 0
+        self.fps = OnscreenText(text='0', style=1, fg=(1,1,1,1),
+                                pos=(1.75,.95), align=TextNode.ARight, scale = .05)
 
     def set_key(self, key, value):
         self.key_map[key] = value
@@ -100,6 +105,14 @@ class MyApp(ShowBase):
             if proj.get_distance(self.render) > 100:
                 self.projectiles.remove(proj)
                 proj.removeNode()
+        return Task.cont
+
+    def print_fps_task(self, task):
+        if task.frame % 30 == 0:
+            delta = task.time - self.fps_time
+            fps = (1 / delta) if delta else 0
+            self.fps.textNode.set_text('%d' % fps)
+        self.fps_time = task.time
         return Task.cont
 
     def move_camera_task(self, task):
